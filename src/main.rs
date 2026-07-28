@@ -38,7 +38,7 @@ struct RespostaApi {
 //############################
 
 // 2. Função handler que recebe um JSON do JS e retorna outro JSON
-async fn processar_json(Json(payload): Json<MensagemEntrada>) -> Json<RespostaApi> {
+async fn processar_json(Json(payload): Json<usuarioJSON>) -> Json<RespostaApi> {
     let resposta = RespostaApi {
         status: "sucesso".to_string(),
         mensagem: format!("Olá, {}! Cadastrado com sucesso.", payload.nome),
