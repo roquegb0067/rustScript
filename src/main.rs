@@ -4,7 +4,7 @@
 // router é quem vai gerenciar rotas
 use axum::{
     extract::Json,
-    routing::post;
+    routing::post,
     Router,
 };
 // Deserialize e Serialize é pra json => rust => json, para converter o json em rust e vice-versa. Serde é a biblioteca pra isso
@@ -42,8 +42,8 @@ async fn processar_json(Json(payload): Json<UsuarioJson>) -> Json<RespostaApi> {
     let resposta = RespostaApi {
     id: 1,
     nome: payload.nome, // Ou o nome do campo da sua struct de entrada
-    idade: 20,
-    // Preencha o outro campo que faltou aqui...
+    idade: payload.idade,
+    texto: payload.texto,
     status: "sucesso".to_string(),
     mensagem: "Processado com sucesso".to_string(),
 };
