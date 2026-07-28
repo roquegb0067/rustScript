@@ -4,7 +4,7 @@
 // router é quem vai gerenciar rotas
 use axum::{
     extract::Json,
-    routing::{get, post},
+    routing::post;
     Router,
 };
 // Deserialize e Serialize é pra json => rust => json, para converter o json em rust e vice-versa. Serde é a biblioteca pra isso
@@ -20,7 +20,7 @@ use std::net::SocketAddr;
 // 1. estruturas que serão convertidas de/para JSON
 //recebimento json 
 #[derive(Serialize, Deserialize)]
-struct usuarioJSON {
+struct UsuarioJson {
     idade: i32,
     nome: String,
     texto: String,
@@ -38,11 +38,16 @@ struct RespostaApi {
 //############################
 
 // 2. Função handler que recebe um JSON do JS e retorna outro JSON
-async fn processar_json(Json(payload): Json<usuarioJSON>) -> Json<RespostaApi> {
+async fn processar_json(Json(payload): Json<UsuarioJson>) -> Json<RespostaApi> {
     let resposta = RespostaApi {
-        status: "sucesso".to_string(),
-        mensagem: format!("Olá, {}! Cadastrado com sucesso.", payload.nome),
-    };
+    id: 1,
+    nome: payload.nome, // Ou o nome do campo da sua struct de entrada
+    idade: 20,
+    // Preencha o outro campo que faltou aqui...
+    status: "sucesso".to_string(),
+    mensagem: "Processado com sucesso".to_string(),
+};
+
     // Retorna o struct envelopado em Json() — o Axum cuida de enviar os headers corretos
     Json(resposta)
 }#[tokio::main]
