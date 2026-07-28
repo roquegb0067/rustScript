@@ -1,10 +1,41 @@
 const visor = document.getElementById('visor');
 let usuarioJSON = null;
-//transforma variáveis dos imputs em JSON 
+let postBusca = null;
+//transforma variáveis dos inputs em JSON 
+async function Pesquisa() {
+  const searchInput = document.getElementById('search').value
+  const busca = { busca: searchInput };
+  postBusca = JSON.stringify(busca);
+  
+  try {
+    // 3. Faz o envio via POST
+    const respostaBusca = await fetch('http://127.0.0.1:3000/api/search', { // Altere para a URL correta da sua rota no Axum
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' // Essencial para o Axum aceitar o Json<>
+      },
+      body: postBusca // envia o json
+    });
+    
+    if (!respostaBusca.ok) {
+      throw new Error('Nada encontrado! Busque de novo...');
+    }
+
+    const dadosBusca = await respostaBusca.json();
+    console.log('Resposta do Search:', dadosBusca);
+  } catch (erro) {
+    console.error('Erro na busca:', erro);
+  }
+}
+
 function run() {
+  
   const idade = document.getElementById('idade').value;
   const nome = document.getElementById('nome').value;
   const texto = document.getElementById('texto').value;
+  
+  
+  
   //transforma em objeto
   const usuario = { idade: Number(idade), nome, texto };
   console.log(usuario);

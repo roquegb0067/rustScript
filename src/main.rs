@@ -18,13 +18,14 @@ use std::net::SocketAddr;
 // structs #######
 //////////////////////////////////////
 // 1. estruturas que serão convertidas de/para JSON
-//recebimento json 
+// recebimento json 
 #[derive(Serialize, Deserialize)]
 struct UsuarioJson {
     idade: i32,
     nome: String,
     texto: String,
 }
+
 // envio json
 #[derive(Serialize)]
 struct RespostaApi {
@@ -35,35 +36,63 @@ struct RespostaApi {
     mensagem: String,
     status: String,
 }
+
+#[derive(Serialize, Deserialize)]
+struct SearchVideo {
+    busca: String,
+}
+
+#[derive(Serialize)]
+struct ResutadoBusca {
+    videoName: String,
+    videoId: String,
+}
 //############################
+
+// Handler do Search (Variáveis movidas para DENTRO da função)
+async fn processarBusca(Json(payload): Json<SearchVideo>) -> Json<ResutadoBusca> {
+    println!("JS buscou por: {}", payload.busca);
+
+    let video_let_id = "abc123".to_string();
+    let video_let_nome = "post de pesquisa pronto".to_string();
+
+    let busca = ResutadoBusca {
+        videoName: video_let_nome,
+        videoId: video_let_id,
+    };
+
+    Json(busca)
+}
 
 // 2. Função handler que recebe um JSON do JS e retorna outro JSON
 async fn processar_json(Json(payload): Json<UsuarioJson>) -> Json<RespostaApi> {
     let resposta = RespostaApi {
-    id: 1,
-    nome: payload.nome, // Ou o nome do campo da sua struct de entrada
-    idade: payload.idade,
-    texto: payload.texto,
-    status: "sucesso".to_string(),
-    mensagem: "Processado com sucesso".to_string(),
-};
+        id: 1,
+        nome: payload.nome,
+        idade: payload.idade,
+        texto: payload.texto,
+        status: "sucesso".to_string(),
+        mensagem: "Processado com sucesso".to_string(),
+    };
 
-    // Retorna o struct envelopado em Json() — o Axum cuida de enviar os headers corretos
     Json(resposta)
-}#[tokio::main]
+}
+
+#[tokio::main]
 async fn main() {
-    // 3.CORS para permitir que o navegador/JS consiga fazer requisições
+    // 3. CORS configurado PRIMEIRO antes de usar nas rotas
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
         .allow_headers(Any);
 
-    // 4. rotas da sua aplicação e adicione a camada de CORS
+    // 4. As duas rotas juntas no MESMO Router
     let app = Router::new()
         .route("/api/usuarios", post(processar_json))
+        .route("/api/search", post(processarBusca))
         .layer(cors);
 
-    // 5. servidor na porta 3000
+    // 5. Servidor na porta 3000
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Servidor rodando em http://{}", addr);
 
