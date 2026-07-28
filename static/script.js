@@ -1,73 +1,64 @@
-// 1. Nosso ARRAY que vai armazenar a lista de objetos de retorno
-const listaDeUsuarios = [];
+const visor = document.getElementById('visor');
+let usuarioJSON = null;
+//transforma variáveis dos imputs em JSON 
+function run() {
+  const idade = document.getElementById('idade').value;
+  const nome = document.getElementById('nome').value;
+  const texto = document.getElementById('texto').value;
+  //transforma em objeto
+  const usuario = { idade: Number(idade), nome, texto };
+  console.log(usuario);
+  //transforma em JSON
+  usuarioJSON = JSON.stringify(usuario);
+  card();
+};
 
-const form = document.getElementById('formUsuario');
-const containerCards = document.getElementById('container-cards');
-
-// 2. Escuta o evento de submit do formulário
-form.addEventListener('submit', async (event) => {
-  event.preventDefault(); // Impede o recarregamento da página
-
-  // 3. Criamos um OBJETOCONSTRUTO com os valores dos inputs
-  // Note a conversão da idade para Number (i32 no Rust)
-  const dadosFormulario = {
-    nome: document.getElementById('nome').value,
-    idade: parseInt(document.getElementById('idade').value, 10),
-    profissao: document.getElementById('profissao').value
-  };
-
+async function card() {
+  console.log(usuarioJSON);
+  //o usuarioJSON é a variável que contem o JSON, JSON.parse para desestruturar
+  const usuarioJson = JSON.parse(usuarioJSON);
+  //cria a constante com variáveis para usar, depois a constante que pegou o valor do Json
+  const { idade, nome, texto } = usuarioJson;
+  console.log(idade);
+  console.log(nome);
+  console.log(texto);
+  visor.innerHTML = `
+    <div>
+   <h2>${nome}</h1>
+   <h3>${idade}</h3>
+   <p>${texto}</p>
+  </div>
+  `
+  console.log(typeof idade);
+  
+  document.getElementById('nameUser').innerText = nome;
+  //inicio da api
   try {
-    // 4. API Fetch: Converte o objeto JS para string JSON e envia via POST
-    const resposta = await fetch('http://127.0.0.1:3000/api/usuarios', {
+    // 3. Faz o envio via POST
+    const resposta = await fetch('http://127.0.0.1:3000/api/usuarios', { // Altere para a URL correta da sua rota no Axum
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json' // Essencial para o Axum aceitar o Json<>
       },
-      body: JSON.stringify(dadosFormulario) // Transforma Objeto JS -> String JSON
+      body: usuarioJSON // envia o json
     });
-
+    
     if (!resposta.ok) {
-      throw new Error('Falha na resposta do servidor Rust');
+      throw new Error('Erro ao enviar os dados');
     }
-
-    // 5. Recebe o JSON de volta do Rust e transforma em Objeto JS
-    const usuarioRetornado = await resposta.json();
-
-    // 6. Adiciona o novo objeto no nosso ARRAY
-    listaDeUsuarios.push(usuarioRetornado);
-
-    // 7. Atualiza os cards na tela
-    renderizarCards();
-
-    // Limpa o formulário
-    form.reset();
-
+    
+    // Se o seu Axum retornar alguma resposta, você pode ler aqui:
+    const dadosResposta = await resposta.json();
+    console.log('Sucesso! Resposta do Rust:', dadosResposta);
+    
+    //"abrindo" o objeto do rust
+    const {
+      nome: nomeReturnoRust,
+      idade: idadeUsuarioReturn
+    } = dadosResposta;
+    console.log(nomeReturnoRust, idadeUsuarioReturn);
+    
   } catch (erro) {
-    console.error('Erro na requisição:', erro);
+    console.error('Erro:', erro);
   }
-});
-
-// 8. Função para ler o ARRAY e renderizar o HTML dos cards
-function renderizarCards() {
-  // Limpa o container para não duplicar
-  containerCards.innerHTML = '';
-
-  // Percorre o ARRAY de objetos usando forEach
-  listaDeUsuarios.forEach((usuario) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    // Monta o HTML do card usando as propriedades do OBJETO
-    card.innerHTML = `
-      <h3>${usuario.nome}</h3>
-      <p><strong>ID:</strong> ${usuario.id}</p>
-      <p><strong>Idade:</strong> ${usuario.idade} anos</p>
-      <p><strong>Profissão:</strong> ${usuario.profissao}</p>
-      <small style="color: #4caf50;">${usuario.mensagem}</small>
-    `;
-
-    // Adiciona o card criado dentro do DOM
-    containerCards.appendChild(card);
-  });
 }
-
